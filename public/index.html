@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Imtihon markazi</title>
+<style>
+:root{--bg:#f3f5ef;--card:#fff;--ink:#17261f;--mut:#667a6f;--line:#d9e0d6;--pri:#1f5c46;--priInk:#fff;--acc:#e8b931;--ok:#1f7a4d;--bad:#b3362b;--okbg:#e2f3e8;--badbg:#f9e3e0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a15;--card:#18251e;--ink:#e8efe9;--mut:#93a89b;--line:#2a3b32;--pri:#4fb98c;--priInk:#08150f;--okbg:#17372a;--badbg:#3d1f1b;--ok:#5fd09a;--bad:#f08a7e}}
+:root[data-theme="dark"]{--bg:#101a15;--card:#18251e;--ink:#e8efe9;--mut:#93a89b;--line:#2a3b32;--pri:#4fb98c;--priInk:#08150f;--okbg:#17372a;--badbg:#3d1f1b;--ok:#5fd09a;--bad:#f08a7e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0 0 .5rem;line-height:1.2}
+header{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.9rem 1.2rem;border-bottom:3px solid var(--acc);background:var(--card)}
+header b{font:700 1.25rem Georgia,serif}
+main{max-width:920px;margin:0 auto;padding:1.2rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+button,.tab{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:.5rem .9rem}
+button.p,.tab.on{background:var(--pri);color:var(--priInk);border-color:var(--pri)}
+button.d{color:var(--bad);border-color:var(--bad);padding:.2rem .6rem}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+input,select,textarea{font:inherit;width:100%;padding:.55rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+label{display:block;font-size:.9rem;color:var(--mut);margin:.6rem 0 .2rem}
+.row{display:flex;gap:.6rem;flex-wrap:wrap}.row>*{flex:1;min-width:140px}
+.chip{display:inline-flex;gap:.4rem;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:.15rem .3rem .15rem .7rem;margin:.15rem;font-size:.9rem}
+.chip button{border:0;background:none;color:var(--bad);padding:0 .4rem}
+.q{border-left:4px solid var(--acc);padding-left:.8rem;margin-bottom:1.2rem}
+.opt{display:flex;gap:.5rem;align-items:center;padding:.4rem .6rem;border:1px solid var(--line);border-radius:8px;margin:.3rem 0;cursor:pointer}
+.opt input{width:auto}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}.opt.bad{background:var(--badbg);border-color:var(--bad)}
+.mut{color:var(--mut);font-size:.9rem}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:.4rem;border-bottom:1px solid var(--line);font-size:.92rem}
+.wrap{overflow-x:auto}
+.login{max-width:380px;margin:8vh auto}
+.ctl{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.score{font:700 2.4rem Georgia,serif;color:var(--pri)}
+</style>
+</head>
+<body>
+<header><b id="ttl"></b><div class="ctl"><span id="who"></span> <button id="lb" onclick="setLang()"></button> <button id="tb" onclick="setTheme()"></button></div></header>
+<main id="app"></main>
+<script>
+const KEY="imtihon_v1";
+let mem=null;
+const RU={"Kirish": "Вход", "Login": "Логин", "Parol": "Пароль", "Boshlang'ich admin:": "Начальный админ:", ". O'qituvchi va o'quvchilarni super admin qo'shadi.": ". Учителей и учеников добавляет суперадмин.", "Chiqish": "Выйти", "(Super admin)": "(Суперадмин)", "(O'qituvchi)": "(Учитель)", "(O'quvchi)": "(Ученик)", "Fanlar va kategoriyalar": "Предметы и категории", "Foydalanuvchilar": "Пользователи", "Yangi fan": "Новый предмет", "Fan qo'shish": "Добавить предмет", "Fanni o'chirish": "Удалить предмет", "Kategoriya yo'q": "Нет категорий", "Qo'shish": "Добавить", "Yangi foydalanuvchi": "Новый пользователь", "Ism": "Имя", "Rol": "Роль", "O'qituvchi": "Учитель", "O'quvchi": "Ученик", "Uning o'qituvchisi": "Его учитель", "Foydalanuvchi qo'shish": "Добавить пользователя", "O'qituvchisi": "Учитель", "Hali foydalanuvchi yo'q.": "Пользователей пока нет.", "Fan nomi": "Название предмета", "Yangi kategoriya": "Новая категория", "O'chirish": "Удалить", "Yangi savol": "Новый вопрос", "Mening savollarim": "Мои вопросы", "Natijalar": "Результаты", "Savol yaratish": "Создать вопрос", "Fan": "Предмет", "Kategoriya": "Категория", "Savol matni": "Текст вопроса", "To'g'ri javob": "Правильный ответ", "Savolni saqlash": "Сохранить вопрос", "Fan bo'yicha filtr": "Фильтр по предмету", "Hammasi": "Все", "Savollar yo'q. \"Yangi savol\" bo'limidan yarating.": "Вопросов нет. Создайте их в разделе «Новый вопрос».", "Ball": "Балл", "Sana": "Дата", "Hali natija yo'q.": "Результатов пока нет.", "to'g'ri javob": "правильных ответов", "Imtihon topshirish": "Сдать экзамен", "Natijalarim": "Мои результаты", "Imtihonni tanlang": "Выберите экзамен", "Boshlash": "Начать", "Yakunlash": "Завершить", "Boshqa imtihon": "Другой экзамен", "Hali imtihon topshirmagansiz.": "Вы ещё не сдавали экзамены.", "Login yoki parol noto'g'ri.": "Неверный логин или пароль.", "Ism, login va parolni to'ldiring.": "Заполните имя, логин и пароль.", "Bu login band.": "Этот логин занят.", "Avval o'qituvchi qo'shing.": "Сначала добавьте учителя.", "Bu fanda kategoriya yo'q. Super admin kategoriya qo'shsin.": "В этом предмете нет категорий. Суперадмин должен их добавить.", "Savol va 4 ta variantni to'ldiring.": "Заполните вопрос и 4 варианта.", "Savol saqlandi.": "Вопрос сохранён.", "Fan va uning savollari o'chiriladi. Davom etasizmi?": "Предмет и его вопросы будут удалены. Продолжить?", "📝 Imtihon markazi": "📝 Экзаменационный центр", "Imtihon markazi": "Экзаменационный центр", "Rejimni almashtirish": "Сменить тему", "Ona tili": "Родной язык", "Adabiyot": "Литература", "Matematika": "Математика", "Algebra": "Алгебра", "Geometriya": "Геометрия", "Fizika": "Физика", "Kimyo": "Химия", "Biologiya": "Биология", "Tarix": "История", "Geografiya": "География", "Informatika": "Информатика", "Ingliz tili": "Английский язык", "Imlo": "Орфография", "Grammatika": "Грамматика", "Nazm": "Поэзия", "Nasr": "Проза", "Arifmetika": "Арифметика", "Masalalar": "Задачи", "Tenglamalar": "Уравнения", "Funksiyalar": "Функции", "Uchburchaklar": "Треугольники", "Aylana": "Окружность", "Mexanika": "Механика", "Elektr": "Электричество", "Noorganik": "Неорганическая", "Organik": "Органическая", "Botanika": "Ботаника", "Zoologiya": "Зоология", "Jahon tarixi": "Всемирная история", "O'zbekiston tarixi": "История Узбекистана", "Fizik geografiya": "Физическая география", "Iqtisodiy geografiya": "Экономическая география", "Algoritmlar": "Алгоритмы", "Dasturlash": "Программирование", "Grammar": "Грамматика (англ.)", "Vocabulary": "Лексика (англ.)"};
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
+let lang=ls("im_lang")||"uz";
+let theme=ls("im_theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+const T=x=>lang==="ru"&&RU[x]?RU[x]:x;
+function setLang(){lang=lang==="uz"?"ru":"uz";ls("im_lang",lang);render()}
+function setTheme(){theme=theme==="dark"?"light":"dark";ls("im_theme",theme);render()}
+function chrome(){document.documentElement.setAttribute("data-theme",theme);document.documentElement.lang=lang;$("ttl").textContent=T("📝 Imtihon markazi");$("lb").textContent=lang==="uz"?"RU":"UZ";$("tb").textContent=theme==="dark"?"☀️":"🌙";$("tb").title=T("Rejimni almashtirish");document.title=T("Imtihon markazi")}
+function tr(root){if(lang!=="ru")return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),a=[];let n;while(n=w.nextNode())a.push(n);a.forEach(n=>{const t=n.nodeValue.trim();if(RU[t])n.nodeValue=n.nodeValue.replace(t,RU[t])});root.querySelectorAll("[placeholder],[title]").forEach(e=>["placeholder","title"].forEach(k=>{const v=e.getAttribute(k);if(v&&RU[v])e.setAttribute(k,RU[v])}))}
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let db={subjects:[],users:[],questions:[],results:[]},me=null,tab="",test=null,token=ls("im_tok")||"";
+async function api(path,body){const r=await fetch("/api/"+path,{method:"POST",headers:{"Content-Type":"application/json","Authorization":token},body:JSON.stringify(body||{})});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||"Xato");return j}
+async function sync(){const j=await api("state");me=j.me;db=j.db}
+async function act(a,d){try{await api("act",{a,...d});await sync()}catch(e){alert(T(e.message))}render()}
+const subj=id=>db.subjects.find(s=>s.id===id);
+const catName=(sid,cid)=>{const s=subj(sid);const c=s&&s.cats.find(c=>c.id===cid);return c?c.name:"?"};
+const userName=id=>{const u=db.users.find(u=>u.id===id);return u?u.name:"?"};
+const subOpts=(sel)=>db.subjects.map(s=>`<option value="${s.id}" ${s.id===sel?"selected":""}>${esc(s.name)}</option>`).join("");
+const $=id=>document.getElementById(id);
+
+function render(){render0();chrome();tr(document.body)}
+function render0(){
+  $("who").innerHTML=me?`${esc(me.name)} <span class="mut">(${{admin:"Super admin",teacher:"O'qituvchi",student:"O'quvchi"}[me.role]})</span> <button onclick="logout()">Chiqish</button>`:"";
+  const a=$("app");
+  if(!me){a.innerHTML=loginView();return}
+  if(me.role==="admin")a.innerHTML=adminView();
+  else if(me.role==="teacher")a.innerHTML=teacherView();
+  else a.innerHTML=studentView();
+}
+function tabs(list){if(!tab||!list.find(t=>t[0]===tab))tab=list[0][0];return `<div class="tabs">${list.map(t=>`<button class="tab ${t[0]===tab?"on":""}" onclick="setTab('${t[0]}')">${t[1]}</button>`).join("")}</div>`}
+async function setTab(t){tab=t;test=null;try{await sync()}catch(e){}render()}
+
+/* LOGIN */
+function loginView(){return `<div class="card login"><h2>Kirish</h2>
+<label>Login</label><input id="lg" autocomplete="username"><label>Parol</label><input id="ps" type="password" autocomplete="current-password">
+<p id="err" class="mut" style="color:var(--bad)"></p><button class="p" onclick="login()" style="width:100%">Kirish</button>
+</div>`}
+async function login(){try{const j=await api("login",{login:$("lg").value.trim(),pass:$("ps").value});token=j.token;ls("im_tok",token);await sync();tab="";render()}catch(e){$("err").textContent=T("Login yoki parol noto'g'ri.")}}
+function logout(){api("logout").catch(()=>{});token="";ls("im_tok","");me=null;test=null;tab="";render()}
+
+/* ADMIN */
+function adminView(){
+  let h=tabs([["f","Fanlar va kategoriyalar"],["u","Foydalanuvchilar"]]);
+  if(tab==="f"){
+    h+=`<div class="card"><h3>Yangi fan</h3><div class="row"><input id="ns" placeholder="Fan nomi"><button class="p" onclick="addSubj()" style="flex:0">Fan qo'shish</button></div></div>`;
+    h+=db.subjects.map(s=>`<div class="card"><div class="row" style="justify-content:space-between"><h3>${esc(s.name)}</h3><button class="d" style="flex:0" onclick="delSubj('${s.id}')">Fanni o'chirish</button></div>
+    <div>${s.cats.map(c=>`<span class="chip">${esc(c.name)}<button title="O'chirish" onclick="delCat('${s.id}','${c.id}')">✕</button></span>`).join("")||'<span class="mut">Kategoriya yo\'q</span>'}</div>
+    <div class="row" style="margin-top:.6rem"><input id="nc_${s.id}" placeholder="Yangi kategoriya"><button onclick="addCat('${s.id}')" style="flex:0">Qo'shish</button></div></div>`).join("");
+  }else{
+    h+=`<div class="card"><h3>Yangi foydalanuvchi</h3><div class="row"><div><label>Ism</label><input id="un"></div><div><label>Rol</label><select id="ur" onchange="toggleT()"><option value="teacher">O'qituvchi</option><option value="student">O'quvchi</option></select></div></div>
+    <div class="row"><div><label>Login</label><input id="ul"></div><div><label>Parol</label><input id="up"></div></div>
+    <div id="tw" style="display:none"><label>Uning o'qituvchisi</label><select id="ut">${db.users.filter(u=>u.role==="teacher").map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select></div>
+    <p id="uerr" style="color:var(--bad)"></p><button class="p" onclick="addUser()">Foydalanuvchi qo'shish</button></div>
+    <div class="card wrap"><table><tr><th>Ism</th><th>Rol</th><th>Login</th><th>O'qituvchisi</th><th></th></tr>
+    ${db.users.filter(u=>u.role!=="admin").map(u=>`<tr><td>${esc(u.name)}</td><td>${u.role==="teacher"?"O'qituvchi":"O'quvchi"}</td><td>${esc(u.login)}</td><td>${u.teacherId?esc(userName(u.teacherId)):"-"}</td><td><button class="d" onclick="delUser('${u.id}')">✕</button></td></tr>`).join("")||'<tr><td colspan="5" class="mut">Hali foydalanuvchi yo\'q.</td></tr>'}</table></div>`;
+  }
+  return h;
+}
+function toggleT(){$("tw").style.display=$("ur").value==="student"?"block":"none"}
+function addSubj(){const n=$("ns").value.trim();if(n)act("addSubj",{name:n})}
+function delSubj(id){if(confirm(T("Fan va uning savollari o'chiriladi. Davom etasizmi?")))act("delSubj",{id})}
+function addCat(sid){const n=$("nc_"+sid).value.trim();if(n)act("addCat",{sid,name:n})}
+function delCat(sid,cid){act("delCat",{sid,cid})}
+function addUser(){const n=$("un").value.trim(),l=$("ul").value.trim(),p=$("up").value,r=$("ur").value;
+  if(!n||!l||!p){$("uerr").textContent=T("Ism, login va parolni to'ldiring.");return}
+  if(r==="student"&&!$("ut").value){$("uerr").textContent=T("Avval o'qituvchi qo'shing.");return}
+  act("addUser",{name:n,login:l,pass:p,role:r,teacherId:r==="student"?$("ut").value:undefined})}
+function delUser(id){act("delUser",{id})}
+
+/* TEACHER */
+let tSub="",tFilt="";
+function catOpts(sid){const s=subj(sid);return s?s.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(""):""}
+function teacherView(){
+  let h=tabs([["n","Yangi savol"],["m","Mening savollarim"],["r","Natijalar"]]);
+  if(tab==="n"){
+    if(!tSub)tSub=db.subjects[0]?.id||"";
+    h+=`<div class="card"><h3>Savol yaratish</h3><div class="row"><div><label>Fan</label><select id="qs" onchange="tSub=this.value;$('qc').innerHTML=catOpts(tSub)">${subOpts(tSub)}</select></div>
+    <div><label>Kategoriya</label><select id="qc">${catOpts(tSub)}</select></div></div>
+    <label>Savol matni</label><textarea id="qt" rows="3"></textarea>
+    ${[0,1,2,3].map(i=>`<label>${lang==="ru"?"Вариант "+"ABCD"[i]:"ABCD"[i]+" variant"}</label><input id="o${i}">`).join("")}
+    <label>To'g'ri javob</label><select id="qa">${[0,1,2,3].map(i=>`<option value="${i}">${"ABCD"[i]}</option>`).join("")}</select>
+    <p id="qerr" style="color:var(--bad)"></p><button class="p" onclick="addQ()">Savolni saqlash</button></div>`;
+  }else if(tab==="m"){
+    const qs=db.questions.filter(q=>q.teacherId===me.id&&(!tFilt||q.subjectId===tFilt));
+    h+=`<div class="card"><label>Fan bo'yicha filtr</label><select onchange="tFilt=this.value;render()"><option value="">Hammasi</option>${subOpts(tFilt)}</select></div>`;
+    h+=qs.map(q=>`<div class="card"><div class="mut">${esc(T(subj(q.subjectId)?.name||"?"))} › ${esc(T(catName(q.subjectId,q.catId)))}</div><b>${esc(q.text)}</b>
+    <ol type="A" style="margin:.4rem 0">${q.opts.map((o,i)=>`<li ${i===q.ans?'style="color:var(--ok);font-weight:700"':""}>${esc(o)}</li>`).join("")}</ol><button class="d" onclick="delQ('${q.id}')">O'chirish</button></div>`).join("")||'<div class="card mut">Savollar yo\'q. "Yangi savol" bo\'limidan yarating.</div>';
+  }else{
+    const st=db.users.filter(u=>u.teacherId===me.id).map(u=>u.id);
+    const rs=db.results.filter(r=>st.includes(r.studentId)).reverse();
+    h+=`<div class="card wrap"><table><tr><th>O'quvchi</th><th>Fan</th><th>Kategoriya</th><th>Ball</th><th>Sana</th></tr>${rs.map(r=>`<tr><td>${esc(userName(r.studentId))}</td><td>${esc(subj(r.subjectId)?.name||"?")}</td><td>${r.catId?esc(catName(r.subjectId,r.catId)):"Hammasi"}</td><td>${r.score}/${r.total}</td><td>${esc(r.date)}</td></tr>`).join("")||'<tr><td colspan="5" class="mut">Hali natija yo\'q.</td></tr>'}</table></div>`;
+  }
+  return h;
+}
+async function addQ(){const t=$("qt").value.trim(),o=[0,1,2,3].map(i=>$("o"+i).value.trim());
+  if(!$("qc").value){$("qerr").textContent=T("Bu fanda kategoriya yo'q. Super admin kategoriya qo'shsin.");return}
+  if(!t||o.some(x=>!x)){$("qerr").textContent=T("Savol va 4 ta variantni to'ldiring.");return}
+  try{await api("act",{a:"addQ",subjectId:$("qs").value,catId:$("qc").value,text:t,opts:o,ans:+$("qa").value});await sync()}catch(e){$("qerr").textContent=T(e.message);return}
+  $("qt").value="";[0,1,2,3].forEach(i=>$("o"+i).value="");$("qerr").style.color="var(--ok)";$("qerr").textContent=T("Savol saqlandi.");setTimeout(()=>{const e=$("qerr");if(e)e.textContent=""},1800)}
+function delQ(id){act("delQ",{id})}
+
+/* STUDENT */
+let sSub="",sCat="";
+function studentView(){
+  const tq=db.questions.filter(q=>q.teacherId===me.teacherId);
+  let h=tabs([["t","Imtihon topshirish"],["h","Natijalarim"]]);
+  if(tab==="h"){
+    const rs=db.results.filter(r=>r.studentId===me.id).reverse();
+    return h+`<div class="card wrap"><table><tr><th>Fan</th><th>Kategoriya</th><th>Ball</th><th>Sana</th></tr>${rs.map(r=>`<tr><td>${esc(subj(r.subjectId)?.name||"?")}</td><td>${r.catId?esc(catName(r.subjectId,r.catId)):"Hammasi"}</td><td>${r.score}/${r.total}</td><td>${esc(r.date)}</td></tr>`).join("")||'<tr><td colspan="4" class="mut">Hali imtihon topshirmagansiz.</td></tr>'}</table></div>`;
+  }
+  if(test)return h+testView();
+  const subs=db.subjects.filter(s=>tq.some(q=>q.subjectId===s.id));
+  if(!subs.length)return h+`<div class="card mut">${lang==="ru"?`Ваш учитель (${esc(userName(me.teacherId))}) ещё не создал вопросов.`:`O'qituvchingiz (${esc(userName(me.teacherId))}) hali savol yaratmagan.`}</div>`;
+  if(!subs.find(s=>s.id===sSub))sSub=subs[0].id;
+  const cats=subj(sSub).cats.filter(c=>tq.some(q=>q.catId===c.id));
+  return h+`<div class="card"><h3>Imtihonni tanlang</h3><p class="mut">${lang==="ru"?"Вопросы составил ваш учитель:":"Savollar o'qituvchingiz"} ${esc(userName(me.teacherId))}${lang==="ru"?".":" tomonidan tuzilgan."}</p>
+  <div class="row"><div><label>Fan</label><select onchange="sSub=this.value;sCat='';render()">${subs.map(s=>`<option value="${s.id}" ${s.id===sSub?"selected":""}>${esc(s.name)}</option>`).join("")}</select></div>
+  <div><label>Kategoriya</label><select onchange="sCat=this.value"><option value="">Hammasi</option>${cats.map(c=>`<option value="${c.id}" ${c.id===sCat?"selected":""}>${esc(T(c.name))} (${tq.filter(q=>q.catId===c.id).length})</option>`).join("")}</select></div></div>
+  <p></p><button class="p" onclick="startTest()">Boshlash</button></div>`;
+}
+function startTest(){const qs=db.questions.filter(q=>q.teacherId===me.teacherId&&q.subjectId===sSub&&(!sCat||q.catId===sCat));
+  test={qs:qs.sort(()=>Math.random()-.5),ans:{},done:false,cat:sCat};render()}
+function pick(qid,i){test.ans[qid]=i}
+function testView(){
+  const t=test;
+  let score=t.qs.filter(q=>t.ans[q.id]===q.ans).length;
+  let h="";
+  if(t.done)h+=`<div class="card"><div class="score">${score} / ${t.qs.length}</div><div>${Math.round(score/t.qs.length*100)}% ${T("to'g'ri javob")}</div><p><button class="p" onclick="test=null;render()">Boshqa imtihon</button></p></div>`;
+  else h+=`<h3>${esc(subj(sSub).name)}</h3>`;
+  h+=t.qs.map((q,n)=>`<div class="card q"><b>${n+1}. ${esc(q.text)}</b>${q.opts.map((o,i)=>{
+    let cls="";if(t.done){if(i===q.ans)cls="ok";else if(t.ans[q.id]===i)cls="bad"}
+    return `<label class="opt ${cls}"><input type="radio" name="q${q.id}" ${t.ans[q.id]===i?"checked":""} ${t.done?"disabled":""} onchange="pick('${q.id}',${i})"> ${"ABCD"[i]}) ${esc(o)}</label>`}).join("")}</div>`).join("");
+  if(!t.done)h+=`<button class="p" onclick="finish()">Yakunlash</button>`;
+  return h;
+}
+async function finish(){const n=test.qs.length,a=Object.keys(test.ans).length;
+  if(a<n&&!confirm(lang==="ru"?`Вы не ответили на вопросов: ${n-a}. Завершить?`:`${n-a} ta savolga javob bermadingiz. Yakunlaysizmi?`))return;
+  try{const j=await api("submit",{subjectId:sSub,catId:test.cat,answers:test.ans,qids:test.qs.map(q=>q.id)});
+    test.qs.forEach(q=>q.ans=j.key[q.id]);test.done=true;await sync()}catch(e){alert(T(e.message));return}
+  render();scrollTo(0,0)}
+(async()=>{if(token){try{await sync()}catch(e){token=""}}render()})();
+</script>
+</body>
+</html>
